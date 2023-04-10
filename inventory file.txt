@@ -1,0 +1,4 @@
+#private ipv4 address for ansible-servers
+172.31.87.130
+172.31.92.18
+172.31.85.130

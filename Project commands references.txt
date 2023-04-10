@@ -1,0 +1,79 @@
+1. create the ansible-machine-sg
+    - enable ssh from on port 22 on my ip
+
+2. create the server-sg 
+    - enable ssh on port 22 from ansible-machine-sg as source
+    http from port 80
+
+3. launch the ansible-machine on aws management console
+    - use ami as amazon linux 2
+    - use one of the keypair in my aws account: e.g., ec2_key.pem
+
+4. ssh into the ansible-machine 
+
+    - in your terminal on your local machine, e.g., pc/MacBook
+    - type: ssh -i ec2_key.pem ec2-user@public_ipv4 address of the ansible machine 
+
+5. create key pairs on the ansible-machine after ssh'ing into it
+    - ssh-keygen -t rsa -b 2048
+    - the private and public keypair created will be in /home/ec2-user/.ssh/id_rsa.pub
+    - navigate to the directory where the keypair is located: i.e., cd .ssh
+    - type ls to see the keypairs (private & public: id_rsa and id_rsa.pub respectively)
+    - then, cat id_rsa.pub to see the content of the public key to copy
+    - goto aws management console > keypair > actions > import keypair. Name the keypair & paste copy
+
+
+6. import public key into the ec2 console
+    - the name of the imported keypair is ansible-pub-key
+
+7. launch the servers, name ansible-servers on aws management console
+    key pair: ansible-pub-key
+    sg: server-sg 
+    # of servers: 3
+
+8. test connection 
+    ssh private_ip of ansible-servers
+
+9. install ansible on ansible-machine
+    sudo yum update -y
+    sudo amazon-linux-extras install ansible2 -y
+
+10. create inventory file
+   - the procedure is:
+   - type sudo vi inventory & press enter/return on your keyboard
+   - on your keyboard, type "i" to enter insert mode
+   - paste the private ipv4 address of the 3 sensible-servers
+   - press esc on your keyboard, type :wq!  
+   - then type ls, this will show you the file you just created and to see the content
+   - type cat inventory
+
+11. create playbook
+   - the procedure is:
+   - type sudo vi ansible-playbook.yml & press enter/return on your keyboard
+   - on your keyboard, type "i" to enter insert mode
+   - paste the content of the ansible-playbook.yml
+   - press esc on your keyboard, type :wq!  
+   - then type ls, this will show you the file you just created and to see the content
+   - type cat ansible-playbook.yml
+
+12. check if the ansible-machine can connect to the ansible-servers
+
+   - ansible all --key-file ~/.ssh/id_rsa -i inventory -m ping -u ec2-user
+
+13. creat ansible.cfg file. i.e., the configuration file
+
+   - the procedure is:
+   - type sudo vi ansible.cfg & press enter/return on your keyboard
+   - on your keyboard, type "i" to enter insert mode
+   - paste: 
+          [defaults]
+          remote_user = ec2-user 
+          inventory = inventory 
+          private_key_file = ~/.ssh/id_rsa
+   - press esc on your keyboard, type :wq!  
+   - then type ls, this will show you the file you just created and to see the content
+   - type cat ansible.cfg
+
+
+14. run the ansible playbook
+    ansible-playbook ansible-playbook.yml
